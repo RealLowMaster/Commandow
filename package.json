@@ -1,0 +1,14 @@
+{
+  "name": "commandow",
+  "description": "a CommandLine Enterface to help you make you own npm packages cli easier.",
+  "version": "0.0.1",
+  "author": "RealLowMaster",
+  "keywords": ["util","commandow", "command-line-interfrace"],
+  "main": "index.js",
+	"types": "index.d.ts",
+  "scripts": {
+    "test": "node test.js",
+		"compile": "npx tsc"
+  },
+  "license": "MIT"
+}
