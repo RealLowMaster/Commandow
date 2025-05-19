@@ -24,6 +24,7 @@ class Command {
 		});
 	}
 
+	/*
 	alias(a) {
 		if (typeof a != "string")
 			throw new TypeError("alias should be a string!");
@@ -38,6 +39,7 @@ class Command {
 		this.#a.push(a);
 		return this;
 	}
+	*/
 
 	description(t) {
 		if (typeof t != "string")
@@ -141,6 +143,8 @@ class Commandow {
 	#cwd; //? Current Working Directory => process.cwd()
 	#frx = /^(([-])?([-])?([a-zA-Z]+)(([-][a-zA-Z]+)+)?)$/; //? flags RegExp
 	#c = []; //? cmds names
+	#ca = []; //? cmds aliases
+	#caa = []; //? cmds all aliases
 	#ma = null;
 	//* Version
 	#v = "1.0.0";
@@ -238,18 +242,55 @@ class Commandow {
 	}
 
 	//* Command
-	add_Command(n, d) {
-		n = n || null;
-		d = d || null;
-		const cmd = new Command(n);
-		const cmd_name = cmd.name;
-		if (this.#c.indexOf(cmd_name) >= 0)
-			throw new Error("Command with " + cmd_name + " already exists!");
+	add_Command(n, ...a) {
+		n = n || null
+		const cmd = new Command(n)
+		const cn = cmd.name
+		if (this.#c.indexOf(cn) >= 0)
+			throw new Error("Command with " + cn + " already exists!")
 
-		if (typeof d == "string") cmd.description(d);
-		this.cmds.push(cmd);
-		this.#c.push(cmd_name)
-		return cmd;
+		const index = this.#c.length
+		if (a != null) {
+			if (Array.isArray(a)) {
+				const aliases = []
+				for (let i = 0, l = a.length; i < l; i++) {
+					// Is String
+					if (typeof a[i] != 'string') {
+						console.warn('[WARN] Command "' + cn + '", alias at index ' + i + ' is not a string! (skipped)')
+						continue
+					}
+					// Same Name With Command Name
+					if (a[i] == cn) {
+						console.warn('[WARN] Command "' + cn + '", alias at index ' + i + ' is same with the command name! (skipped)')
+						continue
+					}
+					// Validate Character
+					if (/^([a-zA-Z])$/.exec(a[i]) == null){
+						console.warn('[WARN] Command "' + cn + '", alias at index ' + i + ' contains invalid characters! (skipped)')
+						continue
+					}
+					// Same Name With Other Command Names
+					if (this.#c.includes(a[i])) {
+						console.warn('[WARN] Command "' + cn + '", alias at index ' + i + ' has same name with another command! (skipped)')
+						continue
+					}
+					// Same Name With Other Aliases
+					if (this.#caa.includes(a[i]) || aliases.includes(a[i])) {
+						console.warn('[WARN] Command "' + cn + '", alias at index ' + i + ' has same name with another alias! (skipped)')
+						continue
+					}
+
+					aliases.push(a[i])
+					this.#caa.push(a[i])
+				}
+				this.#ca[index] = aliases
+			} else
+				throw new TypeError("alias value should be an Array of String!")
+		}
+
+		this.cmds[index] = cmd
+		this.#c[index] = cn
+		return cmd
 	}
 
 	setMainAction(f) {
@@ -257,7 +298,7 @@ class Commandow {
 			throw new TypeError('MainAction should be a Funtion!')
 		
 		this.#ma = f
-		return this;
+		return this
 	}
 
 	parse(a) {

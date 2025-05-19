@@ -80,17 +80,6 @@ export declare class Command {
 	 */
 	constructor(name: string);
 	/**
-	 * write an alias for this command.
-	 *
-	 * If you want multiple aliases, just call this method again.
-	 *
-	 * __Note__: Only the first alias will be shown in generated help.
-	 *
-	 * @param {...string} alias The Aliase Name or Names.
-	 * @return {Command}
-	 */
-	alias(...alias: string[]): Command;
-	/**
 	 * write description for this Command.
 	 *
 	 * @param {string} txt - Desciption Text
@@ -208,10 +197,10 @@ export declare class Commandow {
 	/**
 	 * Add new Command.
 	 * @param {string} name Command name
-	 * @param {string | undefined} description Command Description
+	 * @param {string | undefined} alias alias name for the Command
 	 * @returns {Command}
 	 */
-	add_Command(name: string, description: string | undefined): Command;
+	add_Command(name: string, ...alias: string | undefined): Command;
 	/**
 	 * Set Action if CLI has been run without any Argv
 	 * @param {Function} action - a funtion to be run at that moment
@@ -220,8 +209,8 @@ export declare class Commandow {
 	setMainAction(action: Function): Commandow;
 	/**
 	 * Parse The Command to Run Actions
-	 * @param {string[]} argv - argv from process.argv
+	 * @param {...string} argv - argv from process.argv
 	 * @returns {void}
 	 */
-	parse(argv: string[]): void;
+	parse(...argv: string[]): void;
 }
