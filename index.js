@@ -1,64 +1,15 @@
-class Option {
-	constructor(n, short, type, desc) {
-		n = n || null;
-		if (typeof n != "string")
-			throw new TypeError("Option name should be a string!");
-		if (/^(([-][-])?([a-zA-Z]+)(([-][a-zA-Z]+)+)?)$/.exec(n) == null)
-			throw new Error("name is in wrong pattern. (Ex. release, no-copy)");
-		if (n[0] == "-") n = n.slice(2);
-		this._name = n;
-		this._short = null;
-		this._desc = null;
-		this._type = "string";
-
-		short = short || null;
-		if (short != null) this.short(short);
-		desc = desc || null;
-		if (desc != null) this.description(desc);
-		type = type || null;
-		if (type != null) this.type(type);
-	}
-
-	short(s) {
-		if (typeof s != "string")
-			throw new TypeError("short should be a string!");
-		if (/^([-]?[a-zA-Z]+)$/.exec(s) == null)
-			throw new Error("short is in wrong pattern. (Ex. r, nc)");
-		if (s[0] == "-") s = s.slice(1);
-		if (s == this._name)
-			throw new Error("short cannot be the same as Option name.");
-		this._short = s;
-		return this;
-	}
-
-	/**
-	 * write a Description for Option to be used in help list.
-	 * @param {string} txt - Description Text
-	 * @returns {Option}
-	 */
-	description(txt) {
-		if (typeof txt != "string")
-			throw new TypeError("description text should be a string!");
-		this._desc = txt;
-		return this;
-	}
-
-	/**
-	 * Set Type of The Option value.
-	 * @param {string} type - Type Name
-	 * @returns {Option}
-	 */
-	type(type) {
-		const t = ["string", "boolean", "number"];
-		if (t.indexOf(type) == -1)
-			throw new Error("type should be equal to <string|boolean|number>");
-		this._type = type;
-	}
-}
+const OPTION_TYPES = ["string", "boolean", "number"]
 
 class Command {
 	#a = []; //? aliases
 	#d = "";
+	#f = null;
+	#o = []; //? Options Name
+	#os = []; //? Options Short Name
+	#ot = []; //? Options Type
+	#od = []; //? Options Description
+	#ov = []; //? Options Values
+
 
 	constructor(n) {
 		if (typeof n != "string" || n.length == 0)
@@ -96,21 +47,101 @@ class Command {
 		return this;
 	}
 
-	option(type, name, shortFormedName, description, action) {
-		// #ADD
+	add_option(t, n, s, v, d) {
+		if (typeof t == 'string') {
+			t = OPTION_TYPES.indexOf(t)
+			if (t < 0)
+				throw new TypeError("The Type should be equal to <string|boolean|number !")
+		} else if (typeof t == 'number') {
+			if (t < 0 || t > 2)
+				throw new Error('The Type should be betweeb 0 and 2!')
+		} else
+			throw new TypeError('The Type Argument should be string or number!')
+
+		if (typeof n != "string")
+			throw new TypeError("Option name should be a string!");
+		if (/^(([-][-])?([a-zA-Z]+)(([-][a-zA-Z]+)+)?)$/.exec(n) == null)
+			throw new Error("name is in wrong pattern. (Ex. release, no-copy)")
+		if (n[0] == "-") n = n.slice(2)
+
+		if (v === undefined) v = null
+		if (v != null) {
+			if (typeof v != OPTION_TYPES[t])
+				throw new TypeError("default_value should be same as the Option Type or set as null!")
+		}
+
+		const i = this.#o.length
+		this.#o[i] = n
+		this.#ot[i] = t
+		this.#ov[i] = v
+		this.#os[i] = null
+		this.#od[i] = null
+
+		s = s || null
+		if (s != null) this.setOptionShort(i, s)
+		d = d || null
+		if (d != null) this.setOptionDescription(i, d)
+		return i;
 	}
+
+	setOptionShort(i, s) {
+		if (typeof i == 'string') {
+			i = this.#o.indexOf(i)
+			if (i < 0)
+				throw new Error("Couldn't find the Option!")
+		} else if (typeof i == 'number') {
+			if (typeof this.#o[i] != 'string')
+				throw new Error("Couldn't find the Option!")
+		} else
+			throw new TypeError("Type of option argument should be number or string !")
+
+		if (typeof s != "string")
+			throw new TypeError("short should be a string!")
+		if (/^([-]?[a-zA-Z]+)$/.exec(s) == null)
+			throw new Error("short is in wrong pattern. (Ex. r, nc)")
+		if (s[0] == "-") s = s.slice(1)
+		if (s == this.#o[i])
+			throw new Error("short cannot be the same as Option name.")
+		this.#os[i] = s;
+		return i;
+	}
+
+	setOptionDescription(i, t) {
+		if (typeof i == 'string') {
+			i = this.#o.indexOf(i)
+			if (i < 0)
+				throw new Error("Couldn't find the Option!")
+		} else if (typeof i == 'number') {
+			if (typeof this.#o[i] != 'string')
+				throw new Error("Couldn't find the Option!")
+		} else
+			throw new TypeError("Type of option argument should be number or string !")
+
+		if (typeof t != "string")
+			throw new TypeError("description text should be a string!")
+		this.#od[i] = t
+		return i
+	}
+
 
 	requiredOption() { }
 
 	allowUnknownOption() { }
 
-	action() { }
+	action(f) {
+		if (typeof f != 'function')
+			throw new TypeError("Action Should be a Funtion!")
+
+		this.#f = f
+		return this
+	}
 }
 
 class Commandow {
 	#cwd; //? Current Working Directory => process.cwd()
 	#frx = /^(([-])?([-])?([a-zA-Z]+)(([-][a-zA-Z]+)+)?)$/; //? flags RegExp
 	#c = []; //? cmds names
+	#ma = null;
 	//* Version
 	#v = "1.0.0";
 	#vf = ["-v", "--version"];
@@ -143,7 +174,7 @@ class Commandow {
 		if (typeof mi != 'number' || mi < 0) throw new TypeError('Commandow.versionNumber->major should be typeof number equal or bigger than 0!')
 		if (typeof p != 'number' || p < 0) throw new TypeError('Commandow.versionNumber->major should be typeof number equal or bigger than 0!')
 
-		if (typeof v != "string") throw new TypeError("version should be a string!");
+		const v = m + "." + mi + "." + p
 		if (/^([0-9]+[.][0-9]+[.][0-9]+)$/.exec(v) == null)
 			throw new Error("version is in the wrong pattern. (ex. 1.0.0 or 0.0.1)");
 		this.#v = v;
@@ -217,12 +248,54 @@ class Commandow {
 
 		if (typeof d == "string") cmd.description(d);
 		this.cmds.push(cmd);
+		this.#c.push(cmd_name)
 		return cmd;
+	}
+
+	setMainAction(f) {
+		if (typeof f != 'function')
+			throw new TypeError('MainAction should be a Funtion!')
+		
+		this.#ma = f
+		return this;
+	}
+
+	parse(a) {
+		console.log(a)
+
+		if (!Array.isArray(a))
+			throw new TypeError("Type of Argv should be Array!")
+
+		if (a.length < 2) {
+			if (typeof this.#ma == 'function') this.#ma()
+			return
+		}
+
+		for (let i = 2, l = a.length; i < l; i++) {
+			console.log(a[i])
+		}
 	}
 }
 
 module.exports = {
 	Commandow: Commandow,
-	Command: Command,
-	Option: Option
+	Command: Command
 }
+
+/*
+C:\Users\LowMaster>androidjs -h
+node
+Usage: bin [options] [command]
+
+Android-Js Builder: 2.3.2
+
+Options:
+  -v, --version      output the version number
+  -h, --help         display help for command
+
+Commands:
+  init [options]     Create new project
+  build|b [options]  Build project
+  update|u           Update module
+  help [command]     display help for command
+	*/

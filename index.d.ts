@@ -53,6 +53,20 @@ export declare class Option {
 	 * @returns {Option}
 	 */
 	short(shortFormedName: string);
+
+	/**
+	 * write a Description for Option to be used in help list.
+	 * @param {string} text - Description Text
+	 * @returns {Option}
+	 */
+	description(text: string);
+
+	/**
+	 * Set Type of The Option value.
+	 * @param {string | number} type - Can be String choosing "string", "number", "boolean". \n or can be a Number between 0 and 2. 0 => "string", 1 => "boolean", 2 => "number"
+	 * @returns {Option}
+	 */
+	type(type: string | number);
 }
 
 /**
@@ -94,19 +108,31 @@ export declare class Command {
 	 * @param {string} name - Option Full Name
 	 * @param {OptionType} type - Type of Option value
 	 * @param {string | undefined} [shortFormedName] - Option Short Version of Full Name
+	 * @param {string|number|boolean|null} default_value - should be same type as Option Type or Null
 	 * @param {string | undefined} [description] - Option Description
-	 * @param {Function | undefined} [action] - a Function to be execute when Option has been used
+	 * @returns {number} - Returns Index of Option
 	 */
-	option(
+	add_option(
 		type: OptionType,
 		name: string,
 		shortFormedName: string | undefined,
-		description: string | undefined,
-		action: Function | undefined
-	): Command;
+		default_value: string | number | boolean | null,
+		description: string | undefined
+	): number;
 	/**
-	 *
+	 * Set an Option Short Formed Name
+	 * @param {string|number} option - The Option Name or Index
+	 * @param {string} text - The Short Formed Name for the Option
+	 * @returns {number} - Returns Index of Option
 	 */
+	setOptionShort(option: string|number, text: string): number;
+	/**
+	 * Set an Option Description
+	 * @param {string|number} option - The Option Name or Index
+	 * @param {string} text - The Text about what this Option is for
+	 * @returns {number} - Returns Index of Option
+	 */
+	setOptionDescription(option: string|number, text: string): number;
 }
 
 /**
@@ -179,7 +205,6 @@ export declare class Commandow {
 	 * @param {CMDString} text {@link CMDString} - text of Description.
 	 */
 	helpDescription(text: CMDString): Commandow;
-
 	/**
 	 * Add new Command.
 	 * @param {string} name Command name
@@ -187,4 +212,16 @@ export declare class Commandow {
 	 * @returns {Command}
 	 */
 	add_Command(name: string, description: string | undefined): Command;
+	/**
+	 * Set Action if CLI has been run without any Argv
+	 * @param {Function} action - a funtion to be run at that moment
+	 * @returns {Commandow}
+	 */
+	setMainAction(action: Function): Commandow;
+	/**
+	 * Parse The Command to Run Actions
+	 * @param {string[]} argv - argv from process.argv
+	 * @returns {void}
+	 */
+	parse(argv: string[]): void;
 }

@@ -7,8 +7,8 @@
   "main": "index.js",
 	"types": "index.d.ts",
   "scripts": {
-    "test": "node test.js",
-		"compile": "npx tsc"
+		"compile": "npx tsc",
+    "test": "node \"./test.js\" compile"
   },
   "license": "MIT"
 }
