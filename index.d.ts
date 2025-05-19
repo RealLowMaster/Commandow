@@ -25,60 +25,19 @@ declare type CMDString = string;
 /**
  * values to use as an Option Type
  */
-declare type OptionType = "string" | "number" | "boolean";
-
-/**
- * Commandow -> Command Option/Flag Class
- * @author [RealLowMaster]("https://github.com/RealLowMaster")
- */
-export declare class Option {
-	/**
-	 * Initialize a new `Option` for `Commandow Commands`
-	 * @param {string} name - Option Full Name
-	 * @param {OptionType} type - Type of Option value
-	 * @param {string | undefined} [short] - Option Short Version of Full Name
-	 * @param {string} [description] - Option Description
-	 * @param {Function | undefined} [action] - a Function to be execute when Option has been used
-	 */
-	constructor(
-		name: string,
-		type: string,
-		short: string | undefined,
-		description: string,
-		action: Function | undefined
-	);
-	/**
-	 * Set short form for the option name
-	 * @param {string} shortFormedName - Short Name
-	 * @returns {Option}
-	 */
-	short(shortFormedName: string);
-
-	/**
-	 * write a Description for Option to be used in help list.
-	 * @param {string} text - Description Text
-	 * @returns {Option}
-	 */
-	description(text: string);
-
-	/**
-	 * Set Type of The Option value.
-	 * @param {string | number} type - Can be String choosing "string", "number", "boolean". \n or can be a Number between 0 and 2. 0 => "string", 1 => "boolean", 2 => "number"
-	 * @returns {Option}
-	 */
-	type(type: string | number);
-}
+declare type OptionType = "string" | "number" | "boolean" | 0 | 1| 2;
 
 /**
  * Commandow -> Command Class
  * @author [RealLowMaster]("https://github.com/RealLowMaster")
  */
-export declare class Command {
+declare class Command {
 	/**
 	 * Initialize a new `Command` for `Commandow`
 	 * @param {string} name - Command Name
+	 * @param {Command | null} parent - The Parent Command
 	 */
-	constructor(name: string);
+	constructor(name: string, parent: Command | null);
 	/**
 	 * write description for this Command.
 	 *
@@ -95,44 +54,109 @@ export declare class Command {
 	/**
 	 * Add Option/Flag to this Command.
 	 * @param {string} name - Option Full Name
-	 * @param {OptionType} type - Type of Option value
-	 * @param {string | undefined} [shortFormedName] - Option Short Version of Full Name
+	 * @param {OptionType} type - `string` or `0`, `boolean` or `1`, `number` or `2`
 	 * @param {string|number|boolean|null} default_value - should be same type as Option Type or Null
+	 * @param {string | undefined} [shortFormedName] - Option Short Version of Full Name
 	 * @param {string | undefined} [description] - Option Description
+	 * @param {Function | undefined} [action] - Action/Callback for the Option
 	 * @returns {number} - Returns Index of Option
 	 */
 	add_option(
 		type: OptionType,
 		name: string,
-		shortFormedName: string | undefined,
 		default_value: string | number | boolean | null,
-		description: string | undefined
+		shortFormedName: string | undefined,
+		description: string | undefined,
+		action: Function | undefined
 	): number;
 	/**
-	 * Set an Option Short Formed Name
-	 * @param {string|number} option - The Option Name or Index
-	 * @param {string} text - The Short Formed Name for the Option
-	 * @returns {number} - Returns Index of Option
+	 * get an Option Index from its name or its short name.
+	 * @param {string} name - Option Name or its short for name
+	 * @returns {number} - -1 means it couldn't find the option!
 	 */
-	setOptionShort(option: string|number, text: string): number;
+	get_option_index(name: string): number;
+	/**
+	 * Set an Option Short Formed Name
+	 * @param {string | number} option - The Option Name or Index
+	 * @param {string} text - The Short Formed Name for the Option
+	 * @returns {Command}
+	 */
+	optionShortName(option: string | number, text: string): Command;
 	/**
 	 * Set an Option Description
-	 * @param {string|number} option - The Option Name or Index
+	 * @param {string | number} option - The Option Name or Index
 	 * @param {string} text - The Text about what this Option is for
-	 * @returns {number} - Returns Index of Option
+	 * @returns {Command}
 	 */
-	setOptionDescription(option: string|number, text: string): number;
+	optionDescription(option: string | number, text: string): Command;
+	/**
+	 * Set an Action/Callback for the Option
+	 * @param {string | number} option - The Option Name or Index
+	 * @param {Function} action - a Function that execute when using the option
+	 * @returns {Command}
+	 */
+	optionAction(option: string | number, action: Function): Command;
+	/**
+	 * Commands that has been Added.
+	 * @returns {Command[]}
+	 * @readonly
+	 */
+	readonly commands: Command[];
+	/**
+	 * Add new Command.
+	 * @param {string} name Command name
+	 * @returns {Command}
+	 */
+	add_Command(name: string): Command;
+	/**
+	 * Get Command Aliases
+	 * @returns {string[]}
+	 * @readonly
+	 */
+	readonly aliases: string[];
+	/**
+	 * Add Alias/Aliases for your Command.
+	 * @param {...string} aliases - Alias/Aliases Name for the Command
+	 * @returns {Command}
+	 */
+	alias(...aliases: string): Command;
+	/**
+	 * Check if given name is same with Command Name or 1 of its aliases
+	 * @param {string} name - Name to check
+	 * @returns {boolean}
+	 */
+	hasName(name: string): boolean;
+	/**
+	 * Check if given name is same with Children Commands Name or 1 of their aliases
+	 * @param {string} name - Name to check
+	 * @returns {boolean}
+	 */
+	hasNameInChildren(name: string): boolean;
+	/**
+	 * returns `true` if given name is same with Command Name or 1 of its aliases.
+	 * returns `true` if given name is same with 1 of the Children Command Name or 1 of their aliases.
+	 * @param {string} name - Name to check
+	 * @returns {boolean}
+	 */
+	hasNameInFamily(name: string): boolean;
+	/**
+	 * Parse The Command to Run Actions
+	 * @param {string[]} argv - argv from process.argv
+	 * @param {number} start_index - index to start at. (Default: 2)
+	 * @returns {void}
+	 */
+	parse(argv: string[], start_index: number): void;
 }
 
 /**
  * Commandow -> Main Module
  * @author [RealLowMaster]("https://github.com/RealLowMaster")
  */
-export declare class Commandow {
+declare class Commandow extends Command {
 	/**
 	 * Initialize a new `Commandow`.
 	 *
-	 * @param name write a name for this CLI.
+	 * @param {string} name - write a name for this CLI.
 	 * @author [RealLowMaster]("https://github.com/RealLowMaster")
 	 * @version 0.0.1
 	 */
@@ -155,13 +179,6 @@ export declare class Commandow {
 	 */
 	versionNumber(major: number, minor: number, patch: number): Commandow;
 	/**
-	 * set Flags to call this `CLI Version Print`.
-	 *
-	 * Default is: `('-v', '--version')`.
-	 * @param {...FlagString} flags {@link FlagString} - write flags to be set for Version usage.
-	 */
-	versionFlags(...flags: FlagString[]): Commandow;
-	/**
 	 * write a Text to be used for printing CLI version.
 	 *
 	 * use `{cliName}` - Name of this CLI, you set.
@@ -179,14 +196,6 @@ export declare class Commandow {
 	 * @param {CMDString} text {@link CMDString} - text of Description.
 	 */
 	versionDescription(text: CMDString): Commandow;
-
-	/**
-	 * set Flags to call `CLI help-menu`.
-	 *
-	 * Default is: `('-h', '--help')`.
-	 * @param {...FlagString} flags {@link FlagString} - write flags to be set for Help Menu usage.
-	 */
-	helpFlags(...flags: FlagString[]): Commandow;
 	/**
 	 * write a text to be used as `help` flag Description in `help-menu`.
 	 *
@@ -194,23 +203,6 @@ export declare class Commandow {
 	 * @param {CMDString} text {@link CMDString} - text of Description.
 	 */
 	helpDescription(text: CMDString): Commandow;
-	/**
-	 * Add new Command.
-	 * @param {string} name Command name
-	 * @param {string | undefined} alias alias name for the Command
-	 * @returns {Command}
-	 */
-	add_Command(name: string, ...alias: string | undefined): Command;
-	/**
-	 * Set Action if CLI has been run without any Argv
-	 * @param {Function} action - a funtion to be run at that moment
-	 * @returns {Commandow}
-	 */
-	setMainAction(action: Function): Commandow;
-	/**
-	 * Parse The Command to Run Actions
-	 * @param {...string} argv - argv from process.argv
-	 * @returns {void}
-	 */
-	parse(...argv: string[]): void;
 }
+
+export = Commandow
