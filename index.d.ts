@@ -52,6 +52,12 @@ declare class Command {
 	 */
 	action(action: Function): Command;
 	/**
+	 * Add Argument to the command
+	 * @param {OptionType} type - `string` or `0`, `boolean` or `1`, `number` or `2`
+	 * @param {string | undefined} description - write a description for what the value should be
+	 */
+	argument(type: OptionType, description: string | undefined): Command;
+	/**
 	 * Add Option/Flag to this Command.
 	 * @param {string} name - Option Full Name
 	 * @param {OptionType} type - `string` or `0`, `boolean` or `1`, `number` or `2`
@@ -202,7 +208,7 @@ declare class Commandow extends Command {
 	 * @param {number} start_index - index to start at. (Default: 2)
 	 * @returns {void}
 	 */
-	parse(argv: string[], start_index: number): void;
+	parse(): void;
 }
 
 export = Commandow

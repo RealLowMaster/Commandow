@@ -12,6 +12,8 @@ class Command {
 	#a = []; //? Aliases
 	#d = ""; //? Description
 	#f = null; //? Action Function
+	#arg = []; //? Arguments
+	#argd = []; //? Arguments Description
 
 	// Command
 	#c = []; //? Commands Object
@@ -55,12 +57,45 @@ class Command {
 		return this;
 	}
 
+	//* Argument
+	argument(t, d = null) {
+		if (typeof t == 'string') {
+			t = OPTION_TYPES.indexOf(t)
+			if (t < 0)
+				throw new TypeError("The Type should be equal to <string|boolean|number> !")
+		} else if (typeof t == 'number') {
+			if (t < 0 || t > 2)
+				throw new Error('The Type should be betweeb 0 and 2!')
+		} else
+			throw new TypeError('The Type Argument should be string or number!')
+
+		if (typeof d != 'string') {
+			switch (t) {
+				case 0:
+					d = 'value should be a text'
+					break
+				case 1:
+					d = 'value should be True or False'
+					break
+				case 2:
+					d = 'Enter a number'
+				default:
+					d = 'Enter something'
+
+			}
+		}
+
+		this.#arg.push(t)
+		this.#argd.push(d)
+		return this
+	}
+
 	//* Option
 	add_option(t, n, v, s, d, a) {
 		if (typeof t == 'string') {
-		t = OPTION_TYPES.indexOf(t)
-		if (t < 0)
-			throw new TypeError("The Type should be equal to <string|boolean|number !")
+			t = OPTION_TYPES.indexOf(t)
+			if (t < 0)
+				throw new TypeError("The Type should be equal to <string|boolean|number> !")
 		} else if (typeof t == 'number') {
 			if (t < 0 || t > 2)
 				throw new Error('The Type should be betweeb 0 and 2!')
@@ -321,8 +356,10 @@ class Commandow extends Command {
 	}
 
 	// #ADD Parse
-	parse(a, s = 2) {
+	parse() {
 		
+		const a = process.argv
+		let s = 2
 
 		// Check argv Type
 		if (!Array.isArray(a))
