@@ -35,9 +35,6 @@ class Command {
 			if (REGEX.AZ.exec(n) == null)
 				throw new Error("only alphabets are allowed in Command name!")
 			this.#p = p
-			console.log(this.name, true)
-		} else {
-			console.log(this.name, false)
 		}
 
 		
@@ -228,28 +225,6 @@ class Command {
 		this.#f = f
 		return this
 	}
-
-	// #ADD Parse
-	parse(a, s = 2) {
-		console.log(a)
-		// console.log(process)
-
-		// Check argv Type
-		if (!Array.isArray(a))
-			throw new TypeError("Type of Argv should be Array!")
-		// Check start_index value
-		if (typeof s != 'number' || s < 0)
-			throw new Error("start_index should be a number greater than 0!")
-
-		// if (a.length < s) {
-		// 	if (typeof this.#ma == 'function') this.#ma({cwd: process.cwd()})
-		// 	return
-		// }
-
-		for (let i = s, l = a.length; i < l; i++) {
-			console.log(a[i])
-		}
-	}
 }
 
 class Commandow extends Command {
@@ -343,6 +318,33 @@ class Commandow extends Command {
 	helpDescription(d) {
 		this.optionDescription(1, d)
 		return this
+	}
+
+	// #ADD Parse
+	parse(a, s = 2) {
+		
+
+		// Check argv Type
+		if (!Array.isArray(a))
+			throw new TypeError("Type of Argv should be Array!")
+		// Check start_index value
+		if (typeof s != 'number' || s < 0)
+			throw new Error("start_index should be a number greater than 0!")
+
+		console.log(a)
+
+		if (a.length <= s) {
+			console.log('no-argv')
+		}
+
+		// if (a.length < s) {
+		// 	if (typeof this.#ma == 'function') this.#ma({cwd: process.cwd()})
+		// 	return
+		// }
+
+		for (let i = s, l = a.length; i < l; i++) {
+			console.log(a[i])
+		}
 	}
 }
 

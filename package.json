@@ -7,11 +7,11 @@
 		"email": "LowMBusy@gmail.com",
 		"url": "https://github.com/RealLowMaster"
 	},
-	"keywords": ["util","commandow", "command-line-interfrace", "cli", "console", "helpful"],
+	"keywords": ["util","commandow", "cmd", "command", "input-output-console", "command-line-interfrace", "cli", "console", "helpful", "ioconsole"],
 	"main": "index.js",
 	"types": "index.d.ts",
 	"scripts": {
-		"test": "node \"./test.js\" compile"
+		"test": "node \"./test.js\" -h compile "
 	},
 	"license": "MIT",
 	"repository": {

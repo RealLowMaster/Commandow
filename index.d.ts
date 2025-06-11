@@ -139,13 +139,6 @@ declare class Command {
 	 * @returns {boolean}
 	 */
 	hasNameInFamily(name: string): boolean;
-	/**
-	 * Parse The Command to Run Actions
-	 * @param {string[]} argv - argv from process.argv
-	 * @param {number} start_index - index to start at. (Default: 2)
-	 * @returns {void}
-	 */
-	parse(argv: string[], start_index: number): void;
 }
 
 /**
@@ -203,6 +196,13 @@ declare class Commandow extends Command {
 	 * @param {CMDString} text {@link CMDString} - text of Description.
 	 */
 	helpDescription(text: CMDString): Commandow;
+	/**
+	 * Parse The Command to Run Actions
+	 * @param {string[]} argv - argv from process.argv
+	 * @param {number} start_index - index to start at. (Default: 2)
+	 * @returns {void}
+	 */
+	parse(argv: string[], start_index: number): void;
 }
 
 export = Commandow
